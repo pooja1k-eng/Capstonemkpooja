@@ -9,27 +9,24 @@ phases:
     runtime-versions:
       golang: 1.27
     commands:
-      - "go version"
+      - go version
+      - pwd
+      - ls -la
 
   pre_build:
     commands:
-      - "go mod download"
-      - "go mod verify"
+      - go mod download
+      - go mod verify
 
   build:
     commands:
-      - "mkdir -p bin"
-      - "echo 'Building primary entry point as application...'"
-      - "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o application ./gateway"
-      - "echo 'Building Gateway into bin/...'"
-      - "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o bin/gateway ./gateway"
-      - "echo 'Building Order into bin/...'"
-      - "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o bin/order ./order"
-      - "echo 'Building Product into bin/...'"
-      - "CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o bin/product ./product"
+      # 1. Print directory structure to verify where main.go is
+      - echo "Checking files in root:"
+      - ls -la
+      # 2. Redirect stderr and stdout directly to ensure compiler error is printed in logs
+      - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -v -o application . 2>&1 || (echo "=== BUILD FAILED: Check the compiler output above ===" && exit 1)
 
 artifacts:
   files:
     - application
     - Procfile
-    - bin/**/*
